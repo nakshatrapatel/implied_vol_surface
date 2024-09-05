@@ -53,8 +53,6 @@ class pull_data():
         return result
     
     def list_of_options(self):
-        
-    
         '''
         
 
@@ -97,14 +95,13 @@ class pull_data():
             
         return lst_of_options
     
-    # remember data needs to be changed to pull all data
     
-    def data(self, n: int):
+    def data(self, **kwargs):
         '''
         
         Parameters
         ----------
-        n : int
+        num_options : int
             INPUT THE NUMBER OF OPTIONS TO CONSIDER IN THE DATASET (FIRST n FROM DERIBIT)
 
         Returns
@@ -115,8 +112,6 @@ class pull_data():
             DATA_PUT : DATAFRAME OF JUST PUT OPTIONS
 
         '''
-        
-        my_instrument = self
         '''
         def append_data(option):
             result = my_instrument.get_order_book_1(option)
@@ -154,9 +149,16 @@ class pull_data():
                                        '8': 'greeks'})
 
         '''
-
-        lst_of_options = my_instrument.list_of_options()[0:n]   # need to change -- get rid off [0:5]
-
+        
+        n = kwargs.get('num_options')
+        my_instrument = self
+        
+        
+        if n is not None:
+            lst_of_options = my_instrument.list_of_options()[0:n]
+        else:
+            lst_of_options = my_instrument.list_of_options()
+        
         df = pd.DataFrame({'instr_name': [], 
                            'underlying_price': [], 
                            'best_bid_price': [],

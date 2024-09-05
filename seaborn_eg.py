@@ -26,3 +26,13 @@ ax.set_zlabel('Z-axis')
 plt.title('3D Surface Plot with Seaborn')
 plt.show()
 
+
+
+def data(self, **kwargs):
+    n = kwargs.get('n')
+    my_instrument = self
+    
+    try: 
+        lst_of_options = my_instrument.list_of_options()[0:n]   
+    except:
+        lst_of_options = my_instrument.list_of_options()
