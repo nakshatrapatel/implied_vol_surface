@@ -10,7 +10,7 @@ Created on Fri Aug 23 00:22:07 2024
 # import pandas as pd
 # import multiprocessing as mp
 
-from main import instruments
+from implied_vol_project import instruments
 import pandas as pd
 
 

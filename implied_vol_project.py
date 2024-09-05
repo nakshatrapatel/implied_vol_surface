@@ -151,7 +151,7 @@ class instruments():
 
         '''
 
-        lst_of_options = my_instrument.list_of_options()   # need to change -- get rid off [0:5]
+        lst_of_options = my_instrument.list_of_options()[0:100]   # need to change -- get rid off [0:5]
 
         df = pd.DataFrame({'instr_name': [], 
                            'underlying_price': [], 
