@@ -8,7 +8,7 @@ import pandas as pd
 # import multiprocessing as mp
 
 
-class instruments():
+class pull_data():
     
     def __init__(self):
         pass
@@ -217,7 +217,7 @@ class instruments():
             
         return df, df_call, df_put
         
-    def plotting_axis(self, data_call, data_put):
+    def plotting_axes(self, data_call, data_put):
         '''
         
 

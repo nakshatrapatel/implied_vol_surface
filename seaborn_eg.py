@@ -6,7 +6,6 @@ Created on Tue Sep  3 08:40:19 2024
 @author: nakshatrapatel
 """
 
-import seaborn as sns
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -27,21 +26,3 @@ ax.set_zlabel('Z-axis')
 plt.title('3D Surface Plot with Seaborn')
 plt.show()
 
-
-
-
-
-
-'''
-for option in lst_of_options:
-    result = my_instrument.get_order_book_1(option)
-    df.loc[option] = [result.underlying_price,
-                      result.best_bid_price, 
-                      result.mark_price,
-                      result.best_ask_price,
-                      result.bid_iv,
-                      result.mark_iv,
-                      result.ask_iv,
-                      result.greeks]
-'''
-    

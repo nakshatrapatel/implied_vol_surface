@@ -5,7 +5,7 @@ Created on Fri Aug 23 00:22:07 2024
 
 @author: nakshatrapatel
 """
-from implied_vol_project import instruments, Option
+from implied_vol_project import pull_data, Option
 
 
 
@@ -18,11 +18,19 @@ from implied_vol_project import instruments, Option
 # maturities_strikes_call, maturities_strikes_put = my_instruments.plotting_axis(data_call,
 #                                                                                data_put)
 
-option = Option('BTC-6SEP24-61000-C')
+TICKER = 'BTC-6SEP24-61000-C'
+
+option = Option(TICKER)
 
 print(option.instr_name)
 print(option.maturity)
 print(option.strike)
+
+pulling_data = pull_data()
+
+info = pulling_data.get_order_book_1(TICKER)
+
+print(info)
 
 
 
