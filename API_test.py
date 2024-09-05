@@ -5,24 +5,24 @@ Created on Fri Aug 23 00:22:07 2024
 
 @author: nakshatrapatel
 """
-
-# from main import instruments
-# import pandas as pd
-# import multiprocessing as mp
-
-from implied_vol_project import instruments
-import pandas as pd
+from implied_vol_project import instruments, Option
 
 
-my_instruments = instruments()
 
-data, data_call, data_put = my_instruments.data()
+# my_instruments = instruments()
 
-print(data)
+# data, data_call, data_put = my_instruments.data(n=50)
 
-maturities_strikes_call, maturities_strikes_put = my_instruments.plotting_axis(data_call,
-                                                                               data_put)
+# print(data)
 
+# maturities_strikes_call, maturities_strikes_put = my_instruments.plotting_axis(data_call,
+#                                                                                data_put)
+
+option = Option('BTC-6SEP24-61000-C')
+
+print(option.instr_name)
+print(option.maturity)
+print(option.strike)
 
 
 

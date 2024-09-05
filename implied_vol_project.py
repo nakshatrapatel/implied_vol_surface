@@ -99,9 +99,13 @@ class instruments():
     
     # remember data needs to be changed to pull all data
     
-    def data(self):
+    def data(self, n: int):
         '''
         
+        Parameters
+        ----------
+        n : int
+            INPUT THE NUMBER OF OPTIONS TO CONSIDER IN THE DATASET (FIRST n FROM DERIBIT)
 
         Returns
         -------
@@ -151,7 +155,7 @@ class instruments():
 
         '''
 
-        lst_of_options = my_instrument.list_of_options()[0:100]   # need to change -- get rid off [0:5]
+        lst_of_options = my_instrument.list_of_options()[0:n]   # need to change -- get rid off [0:5]
 
         df = pd.DataFrame({'instr_name': [], 
                            'underlying_price': [], 
@@ -274,7 +278,17 @@ class instruments():
                     
         return adjusted_maturies_strikes_call, adjusted_maturies_strikes_put
     
-    def black_scholes():
+    
+    
+class Option():
+    
+    def __init__(self, instr_name):
+        self.instr_name = str(instr_name)
+        temp_list = self.instr_name.split('-')
+        self.maturity = str(temp_list[1])
+        self.strike = int(temp_list[2])
+    
+    def black_scholes_solver():
         return print('working on it')
     
     def get_IV():
