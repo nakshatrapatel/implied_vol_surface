@@ -8,7 +8,7 @@ import pandas as pd
 # import multiprocessing as mp
 
 
-class pull_data():
+class deribit_options():
     
     def __init__(self):
         pass

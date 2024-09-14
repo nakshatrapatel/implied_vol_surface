@@ -5,13 +5,13 @@ Created on Fri Aug 23 00:22:07 2024
 
 @author: nakshatrapatel
 """
-from implied_vol_project import pull_data, Option
+from implied_vol_project import deribit_options, Option
 
 
 
-my_instruments = pull_data()
+my_instruments = deribit_options()
 
-data, data_call, data_put = my_instruments.data(num_options=50)
+data, data_call, data_put = my_instruments.data()
 
 print(data)
 
