@@ -8,6 +8,7 @@ Created on Fri Aug 30 21:33:36 2024
 
 import pandas as pd
 import numpy as np
+import scipy as sc
 
 path = '/Users/nakshatrapatel/project/vol_surface/BTC-30AUG24-export.csv'
 data = pd.read_csv(path)
@@ -116,7 +117,44 @@ IV_call = []
 
 
 
+# --------------------------------------------------------------------------------------
 
+def black_scholes_e_call(s:float, t:float, k:float, r:float, sigma:float):
+    '''
+    
+
+    Parameters
+    ----------
+    s : float
+        Current price of underlying
+    t : float
+        time to maturity
+    k : float
+        strike
+    r : float
+        interest rate
+    sigma : float
+        volatility
+
+    Returns
+    -------
+    current_value : TYPE
+        value of option
+
+    '''
+    # normal cdf sc.stats.norm.cdf(x, args, kwds)
+    # args -- a list of paramenters for the normal distribution -- this will be the 
+    # normal distribution w.r.t the measure Q which is the measure s.t. 
+    # Z_t the discounted stock price is a Q martingale i.e. 0 drift
+    
+    add = (np.log(s / k) + (r + (sigma**2 / 2)) * t) / (sigma * np.sqrt(t))
+    sub = (np.log(s / k) + (r - (sigma**2 / 2)) * t) / (sigma * np.sqrt(t))
+    
+    current_value = (s * sc.stats.norm.cdf(add)) - ((k * np.exp(-r * t)) * sc.stats.norm.cdf(sub))
+    
+    return current_value
+    
+    
 
 
 
