@@ -11,7 +11,7 @@ from implied_vol_project import deribit_options, Option
 
 my_instruments = deribit_options()
 
-data, data_call, data_put = my_instruments.data(num_options=50)
+data, data_call, data_put = my_instruments.data(num_options=300)
 
 print(data)
 
