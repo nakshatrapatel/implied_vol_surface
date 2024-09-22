@@ -142,8 +142,7 @@ def black_scholes_e_call(s:float, t:float, k:float, r:float, sigma:float):
         value of option
 
     '''
-    # normal cdf sc.stats.norm.cdf(x, args, kwds)
-    # args -- a list of paramenters for the normal distribution -- this will be the 
+
     # normal distribution w.r.t the measure Q which is the measure s.t. 
     # Z_t the discounted stock price is a Q martingale i.e. 0 drift
     
