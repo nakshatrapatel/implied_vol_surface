@@ -7,6 +7,7 @@ import nest_asyncio
 import pandas as pd
 import numpy as np
 from scipy.stats import norm
+from datetime import datetime
 # import multiprocessing as mp
 
 
@@ -161,8 +162,10 @@ class deribit_options():
         else:
             lst_of_options = my_instrument.list_of_options()
         
-        df = pd.DataFrame({'instr_name': [], 
-                           'underlying_price': [], 
+        df = pd.DataFrame({'instr_name': [],
+                           'underlying_price': [],
+                           'index_price': [],
+                           'interest_rate': [],
                            'best_bid_price': [],
                            'mark_price': [],
                            'best_ask_price': [],
@@ -177,6 +180,8 @@ class deribit_options():
         for option in lst_of_options:
             result = my_instrument.get_order_book_1(option)
             df.loc[option] = [result.underlying_price,
+                              result.index_price,
+                              result.interest_rate,
                               result.best_bid_price, 
                               result.mark_price,
                               result.best_ask_price,
@@ -280,7 +285,25 @@ class deribit_options():
                 if int(strike) <= int(data_call.loc[f'BTC-{maturity}-{strike}-C', 'underlying_price']):
                     adjusted_maturies_strikes_put[maturity].append(strike)
                     
-        return adjusted_maturies_strikes_call, adjusted_maturies_strikes_put
+        # no_calls = sum(len(v) for v in adjusted_maturies_strikes_call.values())
+        # no_puts = sum(len(v) for v in adjusted_maturies_strikes_put.values())
+        
+        array_call = []
+        array_put = []
+        
+        for maturity in adjusted_maturies_strikes_call.keys():
+            for k in adjusted_maturies_strikes_call[f'{maturity}']:
+                datetime_obj = datetime.strptime(maturity, '%d%b%y')
+                date_delta = datetime_obj - datetime.today()
+                array_call.append([date_delta.days, k, 0])
+                
+        for maturity in adjusted_maturies_strikes_put.keys():
+            for k in adjusted_maturies_strikes_put[f'{maturity}']:
+                datetime_obj = datetime.strptime(maturity, '%d%b%y')
+                date_delta = datetime_obj - datetime.today()
+                array_put.append([date_delta.days, k, 0])
+                    
+        return adjusted_maturies_strikes_call, adjusted_maturies_strikes_put, array_call, array_put
     
     
     
@@ -292,8 +315,7 @@ class Option():
         self.maturity = str(temp_list[1])
         self.strike = int(temp_list[2])
         
-        
-    def black_scholes_e_call(s:float, t:float, k:float, r:float, sigma:float):
+    def vega(self, s:float, t:float, k:float, r:float, sigma:float):
         '''
         
 
@@ -312,23 +334,66 @@ class Option():
 
         Returns
         -------
-        current_value : TYPE
+        float
+            vega (dv/dsigma)
+
+        '''
+        add = (np.log(s / k) + (r + (sigma**2 / 2)) * t) / (sigma * np.sqrt(t))
+        return norm.pdf(add) * s * np.sqrt(t)
+        
+        
+        
+    def black_scholes_e_call(self, instr_name, s:float, t:float, k:float, r:float, sigma:float):
+        '''
+        
+
+        Parameters
+        ----------
+        s : float
+            Current price of underlying
+        t : float
+            time to maturity
+        k : float
+            strike
+        r : float
+            interest rate
+        sigma : float
+            volatility
+
+        Returns
+        -------
+        current_value : float
             value of option
 
         '''
-
-        # normal distribution w.r.t the measure Q which is the measure s.t. 
-        # Z_t the discounted stock price is a Q martingale i.e. 0 drift
+        
         
         add = (np.log(s / k) + (r + (sigma**2 / 2)) * t) / (sigma * np.sqrt(t))
-        sub = (np.log(s / k) + (r - (sigma**2 / 2)) * t) / (sigma * np.sqrt(t))
-        
+        sub = add - (sigma * np.sqrt(t))
         current_value = (s * norm.cdf(add)) - ((k * np.exp(-r * t)) * norm.cdf(sub))
-        
         return current_value
     
-    def get_IV():
+    def get_IV(self, iterations):
+        
         pass
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     
     
     

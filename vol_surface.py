@@ -155,12 +155,44 @@ def black_scholes_e_call(s:float, t:float, k:float, r:float, sigma:float):
     
     
 
+from datetime import datetime
+
+maturity = '20AUG25'
+
+day = maturity[0:2]
+month = maturity[2:5]
+year = maturity[5:7]
+
+datetime_obj = datetime.strptime(maturity, '%d%b%y')
+
+print(datetime.today())
 
 
+date_delta = datetime.today() - datetime_obj
+
+print(date_delta.days)
+
+my_dict = {'1': [1,2,3,4], '2': [5,6,7]}
+
+# Convert dictionary to a nested list
+nested_list = [[key, value] for key, value in my_dict.items()]
 
 
+array = np.zeros((sum(len(v) for v in my_dict.values()), 2), dtype=float)
 
+array1 = []
 
+for ikey, key in enumerate(my_dict.keys()):
+    for ival, val in enumerate(my_dict[f'{key}']):
+        print(ikey, key, ival, val)
+        array1.append([key, val, 0])
+        
+      
+        
+print('.........')      
+print(array)
+print('.........')
+print(array1)
 
 
 
