@@ -5,10 +5,11 @@ Created on Fri Aug 23 00:22:07 2024
 
 @author: nakshatrapatel
 """
-from implied_vol_project import deribit_options, Option
+from implied_vol_project import deribit_options
 from datetime import datetime
 import numpy as np
 from scipy.stats import norm
+import matplotlib.pyplot as plt
 
 my_instruments = deribit_options()
 
@@ -17,13 +18,13 @@ TICKER = 'BTC-28MAR25-80000-C'
 info = my_instruments.get_order_book_1(TICKER)
 
 
-data, data_call, data_put = my_instruments.data(num_options=50)
+data, data_call, data_put = my_instruments.data()
 
 maturities_strikes_call, maturities_strikes_put, array_call, array_put = my_instruments.plotting_axes(data_call,
                                                                                 data_put)
 
 
-def vega(s:float, t:float, k:float, r:float, sigma:float):
+def black_scholes_vega(s:float, t:float, k:float, r:float, sigma:float):
     '''
     
 
@@ -101,14 +102,15 @@ def black_scholes_e(s:float, t:float, k:float, r:float, sigma:float, opt:str):
 def implied_vol_Newton(P:float, s:float, t:float, k:float, r:float, opt:str, iterations:int):
     
     for i in range(iterations):
-        sigma = 200
+        sigma = 1
         
         price_diff = black_scholes_e(s, t, k, r, sigma, opt) - P
+        # print((price_diff, black_scholes_vega(s, t, k, r, sigma)))
         
         if abs(price_diff) < 0.01:
             break
         
-        sigma = sigma - (price_diff / vega(s, t, k, r, sigma))
+        sigma = sigma - (price_diff / black_scholes_vega(s, t, k, r, sigma))
     
     return sigma
 
@@ -131,23 +133,25 @@ interest_r = info['interest_rate']
 # sigma = implied_vol_Newton(P, underlying_s, time_to_maturity_t, strike_k, interest_r, 100)
 iv = (info['mark_iv'] / 100) 
 
-calc_price = black_scholes_e_call(underlying_s, time_to_maturity_t, strike_k, interest_r, iv)
+calc_price = black_scholes_e(underlying_s, time_to_maturity_t, strike_k, interest_r, iv, 'C')
 
-vega_calc = vega(underlying_s, time_to_maturity_t, strike_k, interest_r, iv)
+vega_calc = black_scholes_vega(underlying_s, time_to_maturity_t, strike_k, interest_r, iv)
 
 vega = info['greeks']['vega'] * 100
 
+implied_vol = implied_vol_Newton(P,underlying_s, time_to_maturity_t, strike_k, interest_r, 'C', 500)
 print((underlying_s,
        P,
        calc_price,
        time_to_maturity_t,
        strike_k,
        interest_r,
-       iv, 
+       iv,
+       implied_vol,
        vega_calc,
        vega))
-'''
 
+'''
 plotting_data = []
 
 for maturity in maturities_strikes_call.keys():
@@ -160,43 +164,71 @@ for maturity in maturities_strikes_call.keys():
         
         underlying_s = data.loc[instr_name, 'underlying_price']
         P = data.loc[instr_name, 'mark_price'] * data.loc[instr_name, 'index_price']
-        time_to_maturity_t = date_delta.days / 365
+        time_to_maturity_t = date_delta.total_seconds() / (365 * 24 * 3600)
         strike_k = strike
         interest_r = data.loc[instr_name, 'interest_rate']
         iv = data.loc[instr_name, 'mark_iv'] / 100
         calc_price = black_scholes_e(underlying_s, time_to_maturity_t, strike_k, interest_r, iv, 'C')
-        sigma = implied_vol_Newton(P, underlying_s, time_to_maturity_t, strike_k, interest_r, 100)
+        sigma = implied_vol_Newton(P, underlying_s, time_to_maturity_t, strike_k, interest_r, 'C', 500)
         
-        print((underlying_s,
-               P,
-               calc_price,
-               time_to_maturity_t,
-               strike_k,
-               interest_r,
-               sigma,
-               iv))
+        # print((underlying_s,
+        #        P,
+        #        calc_price,
+        #        time_to_maturity_t,
+        #        strike_k,
+        #        interest_r,
+        #        iv,
+        #        sigma
+        #        ))
+        
+        plotting_data.append([time_to_maturity_t, strike_k, sigma])
 
-        print('..........................')
 
+x_axis = []
+y_axis = []
+z_axis = []
 
+for i, coord in enumerate(plotting_data):
+    x_axis.append(coord[0] * 365)
+    y_axis.append(coord[1])
+    z_axis.append(coord[2])
 
     
-    
+X = np.array(x_axis)
+Y = np.array(y_axis)
+Z = np.array(z_axis)
+
+# X,Y,Z = np.meshgrid(X,Y,Z)
+
+# print(X.shape)
+# print(Y.shape)
+# print(Z.shape)
+
+# print('.......')
+
+# print((type(X), type(Y), type(Z)))
+fig = plt.figure(figsize=(10, 8))
+ax = fig.add_subplot(111, projection='3d')
+
+ax.scatter(X, Y, Z, cmap='viridis')
+
+ax.set_xlabel('Time to Maturity (Days)')
+ax.set_ylabel('Strike (USD)')
+ax.set_zlabel('Implied Volatility')
+plt.title('Volatility Surface')
+plt.show()
 
 
 
 
-# option = Option(TICKER)
 
-# print(option.instr_name)
-# print(option.maturity)
-# print(option.strike)
 
-# pulling_data = pull_data()
 
-# info = pulling_data.get_order_book_1(TICKER)
 
-# print(info)
+
+
+
+
 
 
 

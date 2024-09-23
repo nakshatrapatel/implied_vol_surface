@@ -16,6 +16,13 @@ y = np.linspace(-5, 5, 100)
 X, Y = np.meshgrid(x, y)
 Z = np.sin(np.sqrt(X**2 + Y**2))
 
+print(type(X))
+print(Y.shape)
+print(Z.shape)
+
+print(Y)
+print(X)
+
 # Create a 3D surface plot with Seaborn
 fig = plt.figure(figsize=(10, 8))
 ax = fig.add_subplot(111, projection='3d')

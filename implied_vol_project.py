@@ -164,7 +164,6 @@ class deribit_options():
         
         df = pd.DataFrame({'instr_name': [],
                            'underlying_price': [],
-                           'last_price': [],
                            'index_price': [],
                            'interest_rate': [],
                            'best_bid_price': [],
@@ -181,7 +180,6 @@ class deribit_options():
         for option in lst_of_options:
             result = my_instrument.get_order_book_1(option)
             df.loc[option] = [result.underlying_price,
-                              result.last_price,
                               result.index_price,
                               result.interest_rate,
                               result.best_bid_price, 
@@ -317,7 +315,7 @@ class Option():
         self.maturity = str(temp_list[1])
         self.strike = int(temp_list[2])
         
-    def vega(self, s:float, t:float, k:float, r:float, sigma:float):
+    def black_scholes_vega(self, s:float, t:float, k:float, r:float, sigma:float):
         '''
         
 
@@ -345,7 +343,7 @@ class Option():
         
         
         
-    def black_scholes_e_call(self, instr_name, s:float, t:float, k:float, r:float, sigma:float):
+    def black_scholes_e(self, s:float, t:float, k:float, r:float, sigma:float, opt:str):
         '''
         
 
@@ -361,6 +359,9 @@ class Option():
             interest rate
         sigma : float
             volatility
+        opt : string
+            'C' for call 
+            'P' for put
 
         Returns
         -------
@@ -369,16 +370,40 @@ class Option():
 
         '''
         
-        
-        add = (np.log(s / k) + (r + (sigma**2 / 2)) * t) / (sigma * np.sqrt(t))
-        sub = add - (sigma * np.sqrt(t))
-        current_value = (s * norm.cdf(add)) - ((k * np.exp(-r * t)) * norm.cdf(sub))
+        if opt == 'C':
+            if t == 0:
+                current_value = max(0, s - k)
+
+            d1 = (np.log(s / k) + (r + sigma**2 / 2) * t) / (sigma * np.sqrt(t))
+            d2 = d1 - (sigma * np.sqrt(t))
+            current_value = (s * norm.cdf(d1)) - ((k * np.exp(-r * t)) * norm.cdf(d2))
+            
+        elif opt == 'p':
+            if t == 0:
+                current_value = max(0, k-s)
+            
+            d1 = (np.log(s / k) + (r + sigma**2 / 2) * t) / (sigma * np.sqrt(t))
+            d2 = d1 - (sigma * np.sqrt(t))
+            
+            current_value = ((k * np.exp(-r * t)) * norm.cdf(-d2)) - (s * norm.cdf(-d1))
+            
         return current_value
-    
-    def get_IV(self, iterations):
+
+
+    def implied_vol_Newton(self, P:float, s:float, t:float, k:float, r:float, opt:str, iterations:int):
         
-        pass
-    
+        for i in range(iterations):
+            sigma = 1
+            
+            price_diff = Option.black_scholes_e(s, t, k, r, sigma, opt) - P
+            # print((price_diff, black_scholes_vega(s, t, k, r, sigma)))
+            
+            if abs(price_diff) < 0.01:
+                break
+            
+            sigma = sigma - (price_diff / Option.black_scholes_vega(s, t, k, r, sigma))
+        
+        return sigma
     
     
     
