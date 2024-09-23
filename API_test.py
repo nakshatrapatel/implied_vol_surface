@@ -106,14 +106,15 @@ datetime_obj = datetime.strptime(maturity, '%d%b%y')
 date_delta = datetime_obj - datetime.today()
 
 underlying_s = info['underlying_price']
-P = info['mark_price'] * info['index_price']
-time_to_maturity_t = date_delta.days
+P = info['mark_price'] * info['mark_price']
+
+time_to_maturity_t = date_delta.days / 365
 
 strike_k = strike
 interest_r = info['interest_rate']
 
 # sigma = implied_vol_Newton(P, underlying_s, time_to_maturity_t, strike_k, interest_r, 100)
-iv = (info['mark_iv'] / 100) * np.sqrt(time_to_maturity_t / 216)
+iv = (info['mark_iv'] / 100)
 
 calc_price = black_scholes_e_call(underlying_s, time_to_maturity_t, strike_k, interest_r, iv)
 

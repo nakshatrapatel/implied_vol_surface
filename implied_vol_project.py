@@ -164,6 +164,7 @@ class deribit_options():
         
         df = pd.DataFrame({'instr_name': [],
                            'underlying_price': [],
+                           'last_price': [],
                            'index_price': [],
                            'interest_rate': [],
                            'best_bid_price': [],
@@ -180,6 +181,7 @@ class deribit_options():
         for option in lst_of_options:
             result = my_instrument.get_order_book_1(option)
             df.loc[option] = [result.underlying_price,
+                              result.last_price,
                               result.index_price,
                               result.interest_rate,
                               result.best_bid_price, 
