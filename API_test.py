@@ -153,7 +153,7 @@ print((underlying_s,
 
 '''
 plotting_data = []
-
+'''
 for maturity in maturities_strikes_call.keys():
     for strike in maturities_strikes_call[f'{maturity}']:
         
@@ -212,23 +212,55 @@ for maturity in maturities_strikes_put.keys():
         
         plotting_data.append([time_to_maturity_t, strike_k, sigma])
 
-
+'''
+maturity = '27SEP24'
+for strike in maturities_strikes_call[f'{maturity}']:
+    
+    instr_name = f'BTC-28MAR25-{strike}-C'
+    
+    datetime_obj = datetime.strptime(maturity, '%d%b%y')
+    date_delta = datetime_obj - datetime.today()
+    
+    underlying_s = data.loc[instr_name, 'underlying_price']
+    P = data.loc[instr_name, 'mark_price'] * data.loc[instr_name, 'index_price']
+    time_to_maturity_t = date_delta.total_seconds() / (365 * 24 * 3600)
+    strike_k = strike
+    interest_r = data.loc[instr_name, 'interest_rate']
+    iv = data.loc[instr_name, 'mark_iv'] / 100
+    calc_price = black_scholes_e(underlying_s, time_to_maturity_t, strike_k, interest_r, iv, 'C')
+    sigma = implied_vol_Newton(P, underlying_s, time_to_maturity_t, strike_k, interest_r, 'C', 500)
+    
+    # print((underlying_s,
+    #        P,
+    #        calc_price,
+    #        time_to_maturity_t,
+    #        strike_k,
+    #        interest_r,
+    #        iv,
+    #        sigma
+    #        ))
+    
+    plotting_data.append([time_to_maturity_t, sigma])
 
 x_axis = []
 y_axis = []
 z_axis = []
 
+# for i, coord in enumerate(plotting_data):
+#     x_axis.append(coord[0] * 365)
+#     y_axis.append(coord[1])
+#     z_axis.append(coord[2])
+
+    
+# X = np.array(x_axis)
+# Y = np.array(y_axis)
+# Z = np.array(z_axis)
+
+# col=Z
 for i, coord in enumerate(plotting_data):
     x_axis.append(coord[0] * 365)
     y_axis.append(coord[1])
-    z_axis.append(coord[2])
 
-    
-X = np.array(x_axis)
-Y = np.array(y_axis)
-Z = np.array(z_axis)
-
-col=Z
 
 # X,Y,Z = np.meshgrid(X,Y,Z)
 
@@ -240,9 +272,10 @@ col=Z
 
 # print((type(X), type(Y), type(Z)))
 fig = plt.figure(figsize=(10, 8))
-ax = fig.add_subplot(111, projection='3d')
+ax = fig.add_subplot(111)
+# ax = fig.add_subplot(111, projection='3d')
 
-ax.scatter(X, Y, Z, c=col)
+ax.scatter(x_axis, y_axis)
 
 ax.set_xlabel('Strike (USD)')
 ax.set_ylabel('Time to Maturity (Days)')
