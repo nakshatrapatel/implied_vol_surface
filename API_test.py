@@ -240,7 +240,7 @@ for strike in maturities_strikes_call[f'{maturity}']:
     #        sigma
     #        ))
     
-    plotting_data.append([time_to_maturity_t, sigma])
+    plotting_data.append([strike, sigma])
     
 for strike in maturities_strikes_put[f'{maturity}']:
     
@@ -268,7 +268,7 @@ for strike in maturities_strikes_put[f'{maturity}']:
     #        sigma
     #        ))
     
-    plotting_data.append([time_to_maturity_t, sigma])
+    plotting_data.append([strike, sigma])
 
 x_axis = []
 y_axis = []
@@ -287,8 +287,9 @@ z_axis = []
 
 # col=Z
 for i, coord in enumerate(plotting_data):
-    x_axis.append(coord[0] * 365)
-    y_axis.append(coord[1])
+    if coord[1] <= 4 and 50000 < coord[0] < 90000:
+        x_axis.append(coord[0])
+        y_axis.append(coord[1])
 
 print(x_axis)
 print(y_axis)
@@ -307,8 +308,8 @@ ax = fig.add_subplot(111)
 
 ax.scatter(x_axis, y_axis)
 ax.set_ylabel('Implied Volatility')
-ax.set_xlabel('Time to Maturity (Days)')
-#ax.set_xlabel('Strike (USD)')
+#ax.set_xlabel('Time to Maturity (Days)')
+ax.set_xlabel('Strike (USD)')
 
 # ax.set_xlabel('Strike (USD)')
 # ax.set_ylabel('Time to Maturity (Days)')
