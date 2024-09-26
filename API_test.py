@@ -153,7 +153,7 @@ print((underlying_s,
 
 '''
 plotting_data = []
-'''
+
 for maturity in maturities_strikes_call.keys():
     for strike in maturities_strikes_call[f'{maturity}']:
         
@@ -170,6 +170,7 @@ for maturity in maturities_strikes_call.keys():
         iv = data.loc[instr_name, 'mark_iv'] / 100
         calc_price = black_scholes_e(underlying_s, time_to_maturity_t, strike_k, interest_r, iv, 'C')
         sigma = implied_vol_Newton(P, underlying_s, time_to_maturity_t, strike_k, interest_r, 'C', 500)
+        delta = data.loc[instr_name, 'greeks']['delta']
         
         # print((underlying_s,
         #        P,
@@ -181,7 +182,7 @@ for maturity in maturities_strikes_call.keys():
         #        sigma
         #        ))
         
-        plotting_data.append([time_to_maturity_t, strike_k, sigma])
+        plotting_data.append([time_to_maturity_t, strike_k, sigma, delta])
         
 for maturity in maturities_strikes_put.keys():
     for strike in maturities_strikes_put[f'{maturity}']:
@@ -199,6 +200,7 @@ for maturity in maturities_strikes_put.keys():
         iv = data.loc[instr_name, 'mark_iv'] / 100
         calc_price = black_scholes_e(underlying_s, time_to_maturity_t, strike_k, interest_r, iv, 'P')
         sigma = implied_vol_Newton(P, underlying_s, time_to_maturity_t, strike_k, interest_r, 'P', 500)
+        delta = data.loc[instr_name, 'greeks']['delta']
         
         # print((underlying_s,
         #        P,
@@ -210,7 +212,7 @@ for maturity in maturities_strikes_put.keys():
         #        sigma
         #        ))
         
-        plotting_data.append([time_to_maturity_t, strike_k, sigma])
+        plotting_data.append([time_to_maturity_t, strike_k, sigma, delta])
 
 '''
 maturity = '27SEP24'
@@ -269,6 +271,8 @@ for strike in maturities_strikes_put[f'{maturity}']:
     #        ))
     
     plotting_data.append([strike, sigma])
+    
+'''
 
 x_axis = []
 y_axis = []
@@ -286,10 +290,20 @@ z_axis = []
 # Z = np.array(z_axis)
 
 # col=Z
+'''
 for i, coord in enumerate(plotting_data):
-    if coord[1] <= 4 and 50000 < coord[0] < 90000:
-        x_axis.append(coord[0])
+    if coord[2] <= 3 and 50000 < coord[1] < 100000:
+        x_axis.append(coord[0] * 365)
         y_axis.append(coord[1])
+        z_axis.append(coord[2])
+        
+'''
+for i, coord in enumerate(plotting_data):
+    if abs(coord[3]) >= 0.05: 
+        x_axis.append(coord[0] * 365)
+        y_axis.append(coord[1])
+        z_axis.append(coord[2])
+
 
 print(x_axis)
 print(y_axis)
@@ -303,18 +317,27 @@ print(y_axis)
 
 # print((type(X), type(Y), type(Z)))
 fig = plt.figure(figsize=(10, 8))
-ax = fig.add_subplot(111)
-# ax = fig.add_subplot(111, projection='3d')
+#ax = fig.add_subplot(111)
 
-ax.scatter(x_axis, y_axis)
-ax.set_ylabel('Implied Volatility')
-#ax.set_xlabel('Time to Maturity (Days)')
-ax.set_xlabel('Strike (USD)')
+ax = fig.add_subplot(111, projection='3d')
 
+ax.scatter(x_axis, y_axis, z_axis)
+
+ax.set_ylabel('Strike (USD)')
+ax.set_xlabel('Time to Maturity (Days)')
+ax.set_zlabel('Implied Volatility')
+
+# ax.plot_surface(X, Y,Z)
+plt.title('Volatility Surface')
+
+
+
+
+# ax.set_ylabel('Implied Volatility')
+# ax.set_xlabel('Time to Maturity (Days)')
 # ax.set_xlabel('Strike (USD)')
-# ax.set_ylabel('Time to Maturity (Days)')
-# ax.set_zlabel('Implied Volatility')
-# plt.title('Volatility Surface')
+
+
 plt.show()
 
 
