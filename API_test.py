@@ -18,7 +18,7 @@ TICKER = 'BTC-28MAR25-60000-P'
 info = my_instruments.get_order_book_1(TICKER)
 
 
-data, data_call, data_put = my_instruments.data(num_options=300)
+data, data_call, data_put = my_instruments.data()
 
 maturities_strikes_call, maturities_strikes_put, array_call, array_put = my_instruments.plotting_axes(data_call,
                                                                                 data_put)
@@ -299,7 +299,7 @@ for i, coord in enumerate(plotting_data):
         
 '''
 for i, coord in enumerate(plotting_data):
-    if abs(coord[3]) >= 0.05: 
+    if abs(coord[3]) >= 0.05 and coord[0] * 365 > 100: 
         x_axis.append(coord[0] * 365)
         y_axis.append(coord[1])
         z_axis.append(coord[2])
@@ -329,8 +329,6 @@ ax.set_zlabel('Implied Volatility')
 
 # ax.plot_surface(X, Y,Z)
 plt.title('Volatility Surface')
-
-
 
 
 # ax.set_ylabel('Implied Volatility')
