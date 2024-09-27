@@ -13,6 +13,8 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from scipy.interpolate import griddata
 from matplotlib import cm
+import plotly.graph_objs as go
+import plotly.io as pio
 
 my_instruments = deribit_options()
 
@@ -242,22 +244,37 @@ xi, yi = np.meshgrid(xi, yi)
 
 zi = griddata((x_axis, y_axis), z_axis, (xi, yi), method='cubic')
 
-fig = plt.figure(figsize=(10, 10))
+# fig = plt.figure(figsize=(10, 10))
 
 
-ax = fig.add_subplot(111, projection='3d')
+# ax = fig.add_subplot(111, projection='3d')
 
 
-ax.plot_surface(xi, yi, zi, cmap=cm.coolwarm)
+# ax.plot_surface(xi, yi, zi, cmap=cm.coolwarm)
 
-ax.set_ylabel('Strike (USD)')
-ax.set_xlabel('Time to Maturity (Days)')
-ax.set_zlabel('Implied Volatility')
+# ax.set_ylabel('Strike (USD)')
+# ax.set_xlabel('Time to Maturity (Days)')
+# ax.set_zlabel('Implied Volatility')
 
-plt.title('Volatility Surface')
+# plt.title('Volatility Surface')
 
+# plt.show()
 
-plt.show()
+surface = go.Surface(z=zi, x=xi, y=yi)
+layout = go.Layout(
+    title='Interactive 3D Surface Plot',
+    scene=dict(
+        xaxis_title='Time to Maturity (Days)',
+        yaxis_title='Strike (USD)',
+        zaxis_title='Implied Volatility'
+    )
+)
+
+fig = go.Figure(data=[surface], layout=layout)
+
+pio.renderers.default = 'browser'
+
+pio.show(fig)
 
 
 
