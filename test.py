@@ -23,6 +23,10 @@ info = my_instruments.get_order_book_1(TICKER)
 
 data, data_call, data_put = my_instruments.data()
 
+# data = data[200:500]
+# data_call = data_call[200:500]
+# data_put = data_put[200:500]
+
 maturities_strikes_call, maturities_strikes_put, array_call, array_put = my_instruments.plotting_axes(data_call,
                                                                                 data_put)
 
@@ -221,10 +225,10 @@ y_axis = []
 z_axis = []
 
 for i, coord in enumerate(plotting_data):
-    if abs(coord[3]) >= 0.05 and coord[0] > 50: 
+    if 0.05 <= abs(coord[3]) <= 0.95 and 0 < coord[2] < 1 and 60000 < coord[1] < 70000: 
         print(coord)
-        x_axis.append(coord[0] * 365)
         y_axis.append(coord[1])
+        x_axis.append(coord[0] * 365)
         z_axis.append(coord[2])
 
 
@@ -238,10 +242,11 @@ xi, yi = np.meshgrid(xi, yi)
 
 zi = griddata((x_axis, y_axis), z_axis, (xi, yi), method='cubic')
 
-fig = plt.figure(figsize=(10, 8))
+fig = plt.figure(figsize=(10, 10))
 
 
 ax = fig.add_subplot(111, projection='3d')
+
 
 ax.plot_surface(xi, yi, zi, cmap=cm.coolwarm)
 
