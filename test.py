@@ -10,6 +10,9 @@ from datetime import datetime
 import numpy as np
 from scipy.stats import norm
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+from scipy.interpolate import griddata
+from matplotlib import cm
 
 my_instruments = deribit_options()
 
@@ -213,93 +216,13 @@ for maturity in maturities_strikes_put.keys():
         #        ))
         
         plotting_data.append([time_to_maturity_t, strike_k, sigma, delta])
-
-'''
-maturity = '27SEP24'
-for strike in maturities_strikes_call[f'{maturity}']:
-    
-    instr_name = f'BTC-{maturity}-{strike}-C'
-    
-    datetime_obj = datetime.strptime(maturity, '%d%b%y')
-    date_delta = datetime_obj - datetime.today()
-    
-    underlying_s = data.loc[instr_name, 'underlying_price']
-    P = data.loc[instr_name, 'mark_price'] * data.loc[instr_name, 'index_price']
-    time_to_maturity_t = date_delta.total_seconds() / (365 * 24 * 3600)
-    strike_k = strike
-    interest_r = data.loc[instr_name, 'interest_rate']
-    iv = data.loc[instr_name, 'mark_iv'] / 100
-    calc_price = black_scholes_e(underlying_s, time_to_maturity_t, strike_k, interest_r, iv, f'{instr_name[-1]}')
-    sigma = implied_vol_Newton(P, underlying_s, time_to_maturity_t, strike_k, interest_r, f'{instr_name[-1]}', 500)
-    
-    # print((underlying_s,
-    #        P,
-    #        calc_price,
-    #        time_to_maturity_t,
-    #        strike_k,
-    #        interest_r,
-    #        iv,
-    #        sigma
-    #        ))
-    
-    plotting_data.append([strike, sigma])
-    
-for strike in maturities_strikes_put[f'{maturity}']:
-    
-    instr_name = f'BTC-{maturity}-{strike}-P'
-    
-    datetime_obj = datetime.strptime(maturity, '%d%b%y')
-    date_delta = datetime_obj - datetime.today()
-    
-    underlying_s = data.loc[instr_name, 'underlying_price']
-    P = data.loc[instr_name, 'mark_price'] * data.loc[instr_name, 'index_price']
-    time_to_maturity_t = date_delta.total_seconds() / (365 * 24 * 3600)
-    strike_k = strike
-    interest_r = data.loc[instr_name, 'interest_rate']
-    iv = data.loc[instr_name, 'mark_iv'] / 100
-    calc_price = black_scholes_e(underlying_s, time_to_maturity_t, strike_k, interest_r, iv, f'{instr_name[-1]}')
-    sigma = implied_vol_Newton(P, underlying_s, time_to_maturity_t, strike_k, interest_r, f'{instr_name[-1]}', 500)
-    
-    # print((underlying_s,
-    #        P,
-    #        calc_price,
-    #        time_to_maturity_t,
-    #        strike_k,
-    #        interest_r,
-    #        iv,
-    #        sigma
-    #        ))
-    
-    plotting_data.append([strike, sigma])
-    
-'''
-
 x_axis = []
 y_axis = []
 z_axis = []
 
-
-# for i, coord in enumerate(plotting_data):
-#     x_axis.append(coord[0] * 365)
-#     y_axis.append(coord[1])
-#     z_axis.append(coord[2])
-
-    
-# X = np.array(x_axis)
-# Y = np.array(y_axis)
-# Z = np.array(z_axis)
-
-# col=Z
-'''
 for i, coord in enumerate(plotting_data):
-    if coord[2] <= 3 and 50000 < coord[1] < 100000:
-        x_axis.append(coord[0] * 365)
-        y_axis.append(coord[1])
-        z_axis.append(coord[2])
-        
-'''
-for i, coord in enumerate(plotting_data):
-    if abs(coord[3]) >= 0.05 and coord[0] * 365 > 100: 
+    if abs(coord[3]) >= 0.05 and coord[0] > 50: 
+        print(coord)
         x_axis.append(coord[0] * 365)
         y_axis.append(coord[1])
         z_axis.append(coord[2])
@@ -307,33 +230,26 @@ for i, coord in enumerate(plotting_data):
 
 print(x_axis)
 print(y_axis)
-# X,Y,Z = np.meshgrid(X,Y,Z)
 
-# print(X.shape)
-# print(Y.shape)
-# print(Z.shape)
+xi = np.linspace(min(x_axis), max(x_axis), 100)
+yi = np.linspace(min(y_axis), max(y_axis), 100)
 
-# print('.......')
+xi, yi = np.meshgrid(xi, yi)
 
-# print((type(X), type(Y), type(Z)))
+zi = griddata((x_axis, y_axis), z_axis, (xi, yi), method='cubic')
+
 fig = plt.figure(figsize=(10, 8))
-#ax = fig.add_subplot(111)
+
 
 ax = fig.add_subplot(111, projection='3d')
 
-ax.scatter(x_axis, y_axis, z_axis)
+ax.plot_surface(xi, yi, zi, cmap=cm.coolwarm)
 
 ax.set_ylabel('Strike (USD)')
 ax.set_xlabel('Time to Maturity (Days)')
 ax.set_zlabel('Implied Volatility')
 
-# ax.plot_surface(X, Y,Z)
 plt.title('Volatility Surface')
-
-
-# ax.set_ylabel('Implied Volatility')
-# ax.set_xlabel('Time to Maturity (Days)')
-# ax.set_xlabel('Strike (USD)')
 
 
 plt.show()
