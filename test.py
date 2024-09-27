@@ -23,7 +23,7 @@ TICKER = 'BTC-28MAR25-60000-P'
 info = my_instruments.get_order_book_1(TICKER)
 
 
-data, data_call, data_put = my_instruments.data()
+data, data_call, data_put = my_instruments.data(num_option=200)
 
 # data = data[200:500]
 # data_call = data_call[200:500]
@@ -131,7 +131,7 @@ strike = 60000
 datetime_obj = datetime.strptime(maturity, '%d%b%y')
 date_delta = datetime_obj - datetime.today()
 
-underlying_s = info['underlying_price']
+underlying_s = info['index_price']
 P = info['mark_price'] * info['index_price']
 
 time_to_maturity_t = date_delta.days / 365
@@ -171,7 +171,7 @@ for maturity in maturities_strikes_call.keys():
         datetime_obj = datetime.strptime(maturity, '%d%b%y')
         date_delta = datetime_obj - datetime.today()
         
-        underlying_s = data.loc[instr_name, 'underlying_price']
+        underlying_s = data.loc[instr_name, 'index_price']
         P = data.loc[instr_name, 'mark_price'] * data.loc[instr_name, 'index_price']
         time_to_maturity_t = date_delta.total_seconds() / (365 * 24 * 3600)
         strike_k = strike
@@ -201,7 +201,7 @@ for maturity in maturities_strikes_put.keys():
         datetime_obj = datetime.strptime(maturity, '%d%b%y')
         date_delta = datetime_obj - datetime.today()
         
-        underlying_s = data.loc[instr_name, 'underlying_price']
+        underlying_s = data.loc[instr_name, 'index_price']
         P = data.loc[instr_name, 'mark_price'] * data.loc[instr_name, 'index_price']
         time_to_maturity_t = date_delta.total_seconds() / (365 * 24 * 3600)
         strike_k = strike
@@ -244,6 +244,10 @@ xi, yi = np.meshgrid(xi, yi)
 
 zi = griddata((x_axis, y_axis), z_axis, (xi, yi), method='cubic')
 
+z_min, z_max = 0 , 1
+
+zi_clipped = np.clip(zi, z_min, z_max)
+
 # fig = plt.figure(figsize=(10, 10))
 
 
@@ -260,9 +264,9 @@ zi = griddata((x_axis, y_axis), z_axis, (xi, yi), method='cubic')
 
 # plt.show()
 
-surface = go.Surface(z=zi, x=xi, y=yi)
+surface = go.Surface(z=zi_clipped, x=xi, y=yi)
 layout = go.Layout(
-    title='Interactive 3D Surface Plot',
+    title='Implied Volatility',
     scene=dict(
         xaxis_title='Time to Maturity (Days)',
         yaxis_title='Strike (USD)',
