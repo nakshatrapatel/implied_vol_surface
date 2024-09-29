@@ -13,3 +13,6 @@ Some side goals:
 * Generating the greeks 
 * Figuring out how to use the multiprocessing library to speed up data extraction
 
+Future goals:
+* SVI fit
+
