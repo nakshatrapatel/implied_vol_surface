@@ -15,19 +15,16 @@ from scipy.interpolate import griddata
 from matplotlib import cm
 import plotly.graph_objs as go
 import plotly.io as pio
+from scipy.optimize import curve_fit
 
 my_instruments = deribit_options()
 
 
-TICKER = 'BTC-28MAR25-60000-P'
+TICKER = 'BTC-29NOV24-60000-C'
 info = my_instruments.get_order_book_1(TICKER)
 
 
-data, data_call, data_put = my_instruments.data(num_option=200)
-
-# data = data[200:500]
-# data_call = data_call[200:500]
-# data_put = data_put[200:500]
+data, data_call, data_put = my_instruments.data()
 
 maturities_strikes_call, maturities_strikes_put, array_call, array_put = my_instruments.plotting_axes(data_call,
                                                                                 data_put)
@@ -178,8 +175,9 @@ for maturity in maturities_strikes_call.keys():
         interest_r = data.loc[instr_name, 'interest_rate']
         iv = data.loc[instr_name, 'mark_iv'] / 100
         calc_price = black_scholes_e(underlying_s, time_to_maturity_t, strike_k, interest_r, iv, 'C')
-        sigma = implied_vol_Newton(P, underlying_s, time_to_maturity_t, strike_k, interest_r, 'C', 500)
+        sigma = implied_vol_Newton(P, underlying_s, time_to_maturity_t, strike_k, interest_r, 'C', 5000)
         delta = data.loc[instr_name, 'greeks']['delta']
+        #sigma = data.loc[instr_name, 'mark_iv'] / 100
         
         # print((underlying_s,
         #        P,
@@ -191,7 +189,7 @@ for maturity in maturities_strikes_call.keys():
         #        sigma
         #        ))
         
-        plotting_data.append([time_to_maturity_t, strike_k, sigma, delta])
+        plotting_data.append([time_to_maturity_t, strike_k / underlying_s, sigma, delta])
         
 for maturity in maturities_strikes_put.keys():
     for strike in maturities_strikes_put[f'{maturity}']:
@@ -208,8 +206,9 @@ for maturity in maturities_strikes_put.keys():
         interest_r = data.loc[instr_name, 'interest_rate']
         iv = data.loc[instr_name, 'mark_iv'] / 100
         calc_price = black_scholes_e(underlying_s, time_to_maturity_t, strike_k, interest_r, iv, 'P')
-        sigma = implied_vol_Newton(P, underlying_s, time_to_maturity_t, strike_k, interest_r, 'P', 500)
+        sigma = implied_vol_Newton(P, underlying_s, time_to_maturity_t, strike_k, interest_r, 'P', 5000)
         delta = data.loc[instr_name, 'greeks']['delta']
+        #sigma=data.loc[instr_name, 'mark_iv'] / 100
         
         # print((underlying_s,
         #        P,
@@ -221,52 +220,94 @@ for maturity in maturities_strikes_put.keys():
         #        sigma
         #        ))
         
-        plotting_data.append([time_to_maturity_t, strike_k, sigma, delta])
+        plotting_data.append([time_to_maturity_t, strike_k / underlying_s, sigma, delta])
+        
 x_axis = []
 y_axis = []
 z_axis = []
 
+# for i, coord in enumerate(plotting_data):
+#     if abs(coord[3]) >= 0 and coord[0] * 365 > 100 and 0 < coord[2] < 1:
+#         print(coord)
+#         y_axis.append(coord[1])
+#         x_axis.append(coord[0] * 365)
+#         z_axis.append(coord[2])
+        
 for i, coord in enumerate(plotting_data):
-    if 0.05 <= abs(coord[3]) <= 0.95 and 0 < coord[2] < 1 and 60000 < coord[1] < 70000: 
+    if abs(coord[3]) >= 0 and 0 < coord[2] < 1:
         print(coord)
         y_axis.append(coord[1])
         x_axis.append(coord[0] * 365)
         z_axis.append(coord[2])
 
 
-print(x_axis)
-print(y_axis)
+print(z_axis)
+print('.................................................................')
 
 xi = np.linspace(min(x_axis), max(x_axis), 100)
 yi = np.linspace(min(y_axis), max(y_axis), 100)
 
 xi, yi = np.meshgrid(xi, yi)
 
-zi = griddata((x_axis, y_axis), z_axis, (xi, yi), method='cubic')
-
-z_min, z_max = 0 , 1
-
-zi_clipped = np.clip(zi, z_min, z_max)
-
-# fig = plt.figure(figsize=(10, 10))
+# zi = griddata((x_axis, y_axis), z_axis, method='cubic')
 
 
-# ax = fig.add_subplot(111, projection='3d')
+# def bounded_griddata(x, y, z, xi, yi, method='cubic', bounds=(0, 2)):
+#     zi = griddata((x, y), z, (xi, yi), method=method)
+    
+#     # Force values to stay within bounds while smoothly interpolating missing values
+#     zi = np.where(zi < bounds[0], bounds[0], zi)  # Set lower bound
+#     zi = np.where(zi > bounds[1], bounds[1], zi)  # Set upper bound
+#     return zi
+
+# # Interpolate z values on the grid with boundaries
+# zi = bounded_griddata(x_axis, y_axis, z_axis, xi, yi, method='cubic', bounds=(0, 2))
+
+def paraboloid(X, a, b, c, d, e, f):
+    x, y = X
+    return (a * x**2) + (b * y**2) + (c * x * y) + (d * x) + (e * y) + f
+
+# Prepare data for curve fitting
+xy_data = np.vstack((x_axis, y_axis))
+
+# Initial guess for parameters
+initial_guess = [1, 1, 1, 1, 1, 1]
+
+# Perform curve fitting
+params, covariance = curve_fit(paraboloid, xy_data, z_axis, p0=initial_guess)
+std_dev = perr = np.sqrt(np.diag(covariance))
+
+a,b,c,d,e,f = params
 
 
-# ax.plot_surface(xi, yi, zi, cmap=cm.coolwarm)
+zi = paraboloid((xi, yi), a, b, c, d, e, f)
 
-# ax.set_ylabel('Strike (USD)')
-# ax.set_xlabel('Time to Maturity (Days)')
-# ax.set_zlabel('Implied Volatility')
+print(zi)
 
-# plt.title('Volatility Surface')
+# z_min, z_max = 0 , 1
 
-# plt.show()
+# zi_clipped = np.clip(zi, z_min, z_max)
 
-surface = go.Surface(z=zi_clipped, x=xi, y=yi)
+fig = plt.figure(figsize=(10, 10))
+
+
+ax = fig.add_subplot(111, projection='3d')
+
+
+ax.plot_surface(xi, yi, zi, cmap=cm.coolwarm)
+# ax.scatter(x_axis, y_axis, z_axis)
+
+ax.set_ylabel('K/S')
+ax.set_xlabel('Time to Maturity (Days)')
+ax.set_zlabel('Implied Volatility')
+
+plt.title(f'Volatility Surface, paraboloid with standard deviation: {std_dev}')
+
+plt.show()
+
+surface = go.Surface(z=zi, x=xi, y=yi)
 layout = go.Layout(
-    title='Implied Volatility',
+    title='Implied Volatility best fit with covariance',
     scene=dict(
         xaxis_title='Time to Maturity (Days)',
         yaxis_title='Strike (USD)',
@@ -279,6 +320,7 @@ fig = go.Figure(data=[surface], layout=layout)
 pio.renderers.default = 'browser'
 
 pio.show(fig)
+
 
 
 
